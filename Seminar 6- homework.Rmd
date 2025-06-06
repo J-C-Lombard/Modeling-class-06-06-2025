@@ -1,0 +1,81 @@
+---
+title: "Seminar 6- Homework"
+author: "Joan"
+date: "2025-06-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(decisionSupport)
+```
+
+## Introduction  
+
+The livestock sector is a cornerstone of rural livelihoods and national food security in Kenya. However, prevailing production systems—characterized by extended animal rearing cycles, inefficient feeding, and informal marketing—contribute significantly to greenhouse gas (GHG) emissions and environmental degradation. These inefficiencies also undermine profitability for producers and create inconsistent supply for meat processors and retailers.
+
+As climate change intensifies, there is a growing need to transition to more efficient, climate-smart livestock production systems. One high-potential opportunity is to shorten livestock holding periods through improved feeding, finishing, and offtake practices—reducing methane emissions while increasing returns for producers and processors.
+
+A meat processor aims to pioneer a contracted green beef production model, working directly with livestock producers and traders to encourage the supply of younger, better-finished animals. This model aligns with global shifts toward sustainable sourcing, low-carbon value chains, and inclusive business models.
+
+
+
+### Emissions redction in cattle farming in Laikipia- Kenya
+```{r}
+
+input_estimates <- data.frame(variable = c("Infrastructure_establishment_cost","Establishment_labor_cost", "Routine_Labor_cost", 
+                                           "Farm_management_cost","Biogas_profit",
+                                           "Cattle_profit"),
+                              lower = c(10000, 5000, 3000, 1000, 1500, 2500),
+                              median = NA,
+                              upper = c(20000, 10000, 4000, 2500, 5500, 25000),
+                              distribution = c("posnorm", "posnorm", "posnorm", 
+                                               "posnorm", "posnorm", "posnorm"),
+                              label = c("Infrastructure establishment cost (USD)", "Establishment labor cost (USD/ha)", "Routine labor cost(USD/ha)",
+                                        "Farm management cost (USD/ha)", "Biogas cost (USD/m3)",
+                                        "Cattle cost (USD/ha)"),
+                              Description = c("Infrastructure cost",
+                                              "Establishment labor cost",
+                                              "Labor costs in a normal season", 
+                                              "Management costs in a normal season",
+                                              "Biogas profit",
+                                              "Cattle profit"))
+
+model_function <- function(){
+  
+  # Estimate the income in a normal season
+  income <- Biogas_profit + Cattle_profit
+  
+  overall_costs <- Infrastructure_establishment_cost + Establishment_labor_cost + Routine_Labor_cost + Farm_management_cost
+  
+  # Estimate the final results from the model
+  final_result <- income - overall_costs
+  
+  # Generate the list of outputs from the Monte Carlo simulation
+  return(list(final_result = final_result))
+}
+
+
+## Run the Monte Carlo simulation using the model function
+example_mc_simulation <- mcSimulation(estimate = as.estimate(input_estimates),
+                                      model_function = model_function,
+                                      numberOfModelRuns = 10000,
+                                    functionSyntax = "plainNames")
+
+
+
+```
+
+
+### Graph  
+
+
+```{r}
+plot_distributions(mcSimulation_object = example_mc_simulation,
+                   vars = "final_result",
+                   method = "boxplot_density",
+                   old_names = "final_result",
+                   new_names = "Outcome distribution for profits")
+```
+
